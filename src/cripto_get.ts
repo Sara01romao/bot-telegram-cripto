@@ -47,7 +47,7 @@ export async function reportPriceCripto() {
     const hourBR = data.toLocaleTimeString('pt-BR');
 
     console.log(msg + "\n\n" + dataBR, hourBR)
-    return `Relatório\n\n ${msg}\n\n - Data: ${dataBR}, ${hourBR} `;
+    return `Relatório - ${dataBR}, ${hourBR}\n\n ${msg}\n\n`;
   }
 
   return null;
