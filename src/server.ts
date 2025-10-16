@@ -1,45 +1,42 @@
 import 'dotenv/config';
-
-console.log("dbvashjgd", process.env.BOT_TOKEN)
-
 import Fastify from 'fastify';
+import {reportPriceCripto } from './cripto_get';
 const fastify = Fastify({
   logger: true
 })
 
-console.log("ldkjsl")
-
-// import { getCripto } from './cripto_get';
-// console.log(getCripto())
-
-
-async function getMe() {
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUpdates `);
-    const data = await response.json();
-
-    console.log(data.result[1].message);
-
-  } catch (error) {
-    console.log({ error: 'Failed to fetch data' });
-  }
-
-}
-getMe();
-
-
 interface MessageRequest {
   chatId: number | string;
-  message: string;
-  cripto: string;
 }
+
+// async function getMe() {
+//   try {
+//     const response = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUpdates `);
+//     const data = await response.json();
+
+//     console.log(data.result[1].message);
+
+//   } catch (error) {
+//     console.log({ error: 'Failed to fetch data' });
+//   }
+
+// }
+// getMe();
+
+
+// interface MessageRequest {
+//   chatId: number | string;
+//   message: string;
+//   cripto: string;
+// }
 
 fastify.post('/send-message', async function (req, reply) {
   console.log("body", req.body);
+  const result_coins = await reportPriceCripto();
 
   try {
-    const { chatId, message, cripto } = req.body as MessageRequest;
-    const text = message + cripto;
+    const { chatId} = req.body as MessageRequest;
+    const text = result_coins;
 
     const response = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
       method: 'POST',
