@@ -1,53 +1,43 @@
 
-const criptos: string[] = ["USD-BRL", "BTC-BRL", "BTC-USD", "ETH-BRL", "ETH-USD", "SOL-BRL", "SOL-USD"];
+const criptos: string[] = ["ethereum", "bitcoin", "solana"];
 
-export interface CryptoCurrency {
-  code: string;
-  codein: string;
-  name: string;
-  high: string;
-  low: string;
-  varBid: string;
-  pctChange: string;
-  bid: string;
-  ask: string;
-  timestamp: string;
-  create_date: string;
-}
+export type CryptoCurrency = {
+  [key: string]: {
+    brl: number;
+    usd: number;
+    last_updated_at: number;
+  };
+};
 
 export async function getCripto() {
-   try {
-      const response = await fetch(`https://economia.awesomeapi.com.br/last/${criptos}`);
-         
-      if(!response.ok) throw new Error(`Erro na API`);
-   
-      const data = await response.json() as CryptoCurrency;
-      return {data:data, ok:"true", error:""}
-   
-   } catch (error) {
-      return {data:null, ok:false, error: 'Failed to fetch data'}
-   }
-}
+  try {
+    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${criptos}&vs_currencies=brl,usd&include_last_updated_at=true`);
 
+    if (!response.ok) throw new Error(`Erro na API`);
+
+    const data = await response.json() as CryptoCurrency;
+    console.log(data)
+    return { data: data, ok: "true", error: "" }
+
+  } catch (error) {
+    return { data: null, ok: false, error: 'Failed to fetch data' }
+  }
+}
 
 export async function reportPriceCripto() {
   const result = await getCripto();
 
   if (result.ok && result.data) {
-    console.log(result.data)
+    let msg = "";
 
-    const coins: CryptoCurrency[] = Object.values(result.data);
-    const msg = coins.map(item =>
-      `${item.code} / ${item.codein}\nPreço: ${item.codein === "BRL" ? "R$" : item.codein === "USD" ? "$" : ""} ${item.bid}`
+    for (const key in result.data) {
+      const element = result.data[key];
 
-    ).join("\n\n")
+      msg += `${key.toUpperCase()}:\nR$ ${new Intl.NumberFormat("pt-BR").format(element.brl)} / $ ${new Intl.NumberFormat("en-US").format(element.usd)}\n Atualizado: ${new Date(element.last_updated_at * 1000).toLocaleString('pt-BR')}h\n\n`;
+    }
 
-    const data = new Date(Number(coins[0].timestamp) * 1000);
-    const dataBR = data.toLocaleDateString('pt-BR');
-    const hourBR = data.toLocaleTimeString('pt-BR');
-
-    console.log(msg + "\n\n" + dataBR, hourBR)
-    return `Relatório - ${dataBR}, ${hourBR}\n\n ${msg}\n\n`;
+    console.log("depois", msg)
+    return `RELATÓRIO\n\n ${msg}`;
   }
 
   return null;
